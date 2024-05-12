@@ -56,8 +56,12 @@ const getShowsByGenre = async (req, res) => {
 const updateShowRating =  async (req, res) => {
     try {
         const showId = req.params.showId;
-        const newRating = req.body.rating;
+        const newRating = req.body.rating.trim();
 
+        // Server Side Validation - validate the "rating" field
+        if (!newRating) {
+            return res.status(400).json({ message: 'Rating cannot be empty' });
+        }
         // Find the show by Id
         const show = await Show.findByPk(showId);
         // If the show doesn't exist, return a 404 Not Found error
@@ -66,6 +70,8 @@ const updateShowRating =  async (req, res) => {
         }
         // Update the rating of the show
         show.rating = newRating;
+        // Save the updated show
+        await show.save()
         // Return the updated show
         res.json(show);
     } catch (error) {
@@ -77,7 +83,14 @@ const updateShowRating =  async (req, res) => {
 const updateShowAvailability = async (req, res) => {
     try {
         const showId = req.params.showId;
-        const newAvailability = req.body.available;
+        const newAvailability = req.body.available.trim(); // Trim whitespace from the input
+        // Server Side Validation - Validate the "available" field
+        if (!newAvailability) {
+            return res.status(400).json({ message: 'Status cannot be empty' });
+        }
+        if (newAvailability.length < 5 || newAvailability.length > 25) {
+            return res.status(400).json({ message: 'Status must be between 5 and 25 characters' });
+        }
         const show = await Show.findByPk(showId);
         // If the show doesn't exist, return a 404 Not Found error
         if(!show) {
